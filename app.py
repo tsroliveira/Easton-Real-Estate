@@ -61,14 +61,24 @@ else:
     modelo = joblib.load(modelo_path)
     st.success("✅ Modelo carregado de modelo_imovel.pkl")
 
-centro_dallas = (32.7767, -96.7970)
-
 # ====== ETAPA 2: Mapa com clique e marcador persistente ======
+
+centro_dallas = (32.7767, -96.7970)
 
 if 'pin_coords' not in st.session_state:
     st.session_state.pin_coords = None
 
-m = folium.Map(location=centro_dallas, zoom_start=11)
+# Define o centro atual do mapa
+if st.session_state.pin_coords:
+    mapa_central = (
+        st.session_state.pin_coords['lat'],
+        st.session_state.pin_coords['lng']
+    )
+else:
+    mapa_central = centro_dallas
+
+# Cria o mapa centralizado no último clique (ou Dallas)
+m = folium.Map(location=mapa_central, zoom_start=11)
 folium.Marker(location=centro_dallas, tooltip="Centro de Dallas", icon=folium.Icon(color="blue")).add_to(m)
 
 if st.session_state.pin_coords:
@@ -82,6 +92,7 @@ st.markdown("### 🗺️ Clique no mapa para escolher a localização do imóvel
 map_data = st_folium(m, width=700, height=500)
 
 if map_data and map_data['last_clicked']:
+    st.toast("📍 Clique registrado! Posicionando marcador...", icon="🗺️")
     st.session_state.pin_coords = map_data['last_clicked']
 
 # ====== ETAPA 3: Formulário de dados e predição ======
